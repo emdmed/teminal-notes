@@ -9,39 +9,151 @@ export function getNotesFilePath() {
 	return path.join(homeDir, NOTES_FILE);
 }
 
-export function loadNotes() {
+// Default themes to populate on first load
+const defaultThemes = {
+	default: {
+		primary: "#6ee7b7",
+		secondary: "#c4b5fd",
+		danger: "#fb7185",
+		warning: "#fcd34d",
+		success: "#bef264",
+		info: "#93c5fd",
+		priorityNone: "#ffffff",
+		priorityLow: "#93c5fd",
+		priorityMedium: "#fef08a",
+		priorityHigh: "#f87171"
+	},
+	dark: {
+		primary: "#10b981",
+		secondary: "#8b5cf6",
+		danger: "#ef4444",
+		warning: "#f59e0b",
+		success: "#84cc16",
+		info: "#3b82f6",
+		priorityNone: "#d1d5db",
+		priorityLow: "#60a5fa",
+		priorityMedium: "#fbbf24",
+		priorityHigh: "#f87171"
+	},
+	nord: {
+		primary: "#88c0d0",
+		secondary: "#b48ead",
+		danger: "#bf616a",
+		warning: "#ebcb8b",
+		success: "#a3be8c",
+		info: "#81a1c1",
+		priorityNone: "#4c566a",
+		priorityLow: "#5e81ac",
+		priorityMedium: "#ebcb8b",
+		priorityHigh: "#bf616a"
+	},
+	gruvbox: {
+		primary: "#83a598",
+		secondary: "#d3869b",
+		danger: "#fb4934",
+		warning: "#fabd2f",
+		success: "#b8bb26",
+		info: "#8ec07c",
+		priorityNone: "#a89984",
+		priorityLow: "#83a598",
+		priorityMedium: "#fabd2f",
+		priorityHigh: "#fb4934"
+	},
+	dracula: {
+		primary: "#50fa7b",
+		secondary: "#bd93f9",
+		danger: "#ff5555",
+		warning: "#f1fa8c",
+		success: "#50fa7b",
+		info: "#8be9fd",
+		priorityNone: "#f8f8f2",
+		priorityLow: "#8be9fd",
+		priorityMedium: "#f1fa8c",
+		priorityHigh: "#ff5555"
+	}
+};
+
+function loadData() {
 	const filePath = getNotesFilePath();
 
 	try {
 		if (!fs.existsSync(filePath)) {
-			fs.writeFileSync(filePath, JSON.stringify([]), 'utf8');
-			return [];
+			const defaultData = {
+				config: { theme: 'default' },
+				themes: defaultThemes,
+				notes: []
+			};
+			fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2), 'utf8');
+			return defaultData;
 		}
 
 		const fileContent = fs.readFileSync(filePath, 'utf8');
-		const notes = JSON.parse(fileContent);
+		const data = JSON.parse(fileContent);
 
-		if (!Array.isArray(notes)) {
-			throw new Error('Invalid notes file format');
+		// Backwards compatibility: if data is array, migrate to new format
+		if (Array.isArray(data)) {
+			const migratedData = {
+				config: { theme: 'default' },
+				themes: defaultThemes,
+				notes: data
+			};
+			fs.writeFileSync(filePath, JSON.stringify(migratedData, null, 2), 'utf8');
+			return migratedData;
 		}
 
-		return notes;
+		// Ensure config exists
+		if (!data.config) {
+			data.config = { theme: 'default' };
+		}
+
+		// Ensure themes exists (migration for existing users)
+		if (!data.themes) {
+			data.themes = defaultThemes;
+			fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+		}
+
+		// Ensure notes exists
+		if (!Array.isArray(data.notes)) {
+			data.notes = [];
+		}
+
+		return data;
 	} catch (error) {
-		console.error('Error loading notes:', error.message);
-		return [];
+		console.error('Error loading data:', error.message);
+		return {
+			config: { theme: 'default' },
+			themes: defaultThemes,
+			notes: []
+		};
+	}
+}
+
+export function loadNotes() {
+	const data = loadData();
+	return data.notes;
+}
+
+function saveData(data) {
+	const filePath = getNotesFilePath();
+
+	try {
+		fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+		return true;
+	} catch (error) {
+		console.error('Error saving data:', error.message);
+		return false;
 	}
 }
 
 export function saveNotes(notes) {
-	const filePath = getNotesFilePath();
-
 	try {
 		if (!Array.isArray(notes)) {
 			throw new Error('Notes must be an array');
 		}
 
-		fs.writeFileSync(filePath, JSON.stringify(notes, null, 2), 'utf8');
-		return true;
+		const data = loadData();
+		data.notes = notes;
+		return saveData(data);
 	} catch (error) {
 		console.error('Error saving notes:', error.message);
 		return false;
@@ -104,4 +216,40 @@ export function updateNote(id, title, content, priority = null) {
 
 	saveNotes(notes);
 	return notes[noteIndex];
+}
+
+export function loadConfig() {
+	const data = loadData();
+	return data.config;
+}
+
+export function saveConfig(config) {
+	try {
+		const data = loadData();
+		data.config = { ...data.config, ...config };
+		return saveData(data);
+	} catch (error) {
+		console.error('Error saving config:', error.message);
+		return false;
+	}
+}
+
+export function loadThemes() {
+	const data = loadData();
+	return data.themes || defaultThemes;
+}
+
+export function saveThemes(themes) {
+	try {
+		if (typeof themes !== 'object' || themes === null) {
+			throw new Error('Themes must be an object');
+		}
+
+		const data = loadData();
+		data.themes = themes;
+		return saveData(data);
+	} catch (error) {
+		console.error('Error saving themes:', error.message);
+		return false;
+	}
 }

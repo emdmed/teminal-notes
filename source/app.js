@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useInput, useApp } from 'ink';
+import { ThemeProvider } from './contexts/ThemeContext.js';
 import NoteListView from './components/NoteListView.js';
 import NoteEditor from './components/NoteEditor.js';
 import DeleteConfirmation from './components/DeleteConfirmation.js';
@@ -11,7 +12,7 @@ import {
 	getNoteById,
 } from './storage.js';
 
-export default function App() {
+function AppContent() {
 	const { exit } = useApp();
 	const [view, setView] = useState('list');
 	const [notes, setNotes] = useState([]);
@@ -156,4 +157,12 @@ export default function App() {
 	}
 
 	return null;
+}
+
+export default function App() {
+	return (
+		<ThemeProvider>
+			<AppContent />
+		</ThemeProvider>
+	);
 }

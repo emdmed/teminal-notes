@@ -1,11 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { useScreenSize } from '../hooks/useScreenSize.js';
-import { colors } from '../utils/colors.js';
+import { useTheme } from '../contexts/ThemeContext.js';
+import ThemeSelector from './ThemeSelector.js';
 
 const NoteListView = ({ notes, onView, onEdit, onDelete, onAdd, sortMode, onToggleSort, onChangePriority }) => {
 	const [selectedIndex, setSelectedIndex] = useState(0);
+	const [showThemeSelector, setShowThemeSelector] = useState(false);
 	const { height, width } = useScreenSize();
+	const { colors } = useTheme();
 
 	const maxVisibleNotes = Math.max(1, height - 7);
 
@@ -21,6 +24,11 @@ const NoteListView = ({ notes, onView, onEdit, onDelete, onAdd, sortMode, onTogg
 	}, [selectedIndex, notes.length, maxVisibleNotes]);
 
 	useInput((input, key) => {
+		// Don't process input when theme selector is showing
+		if (showThemeSelector) {
+			return;
+		}
+
 		if (input === 'j' && selectedIndex < notes.length - 1) {
 			setSelectedIndex(selectedIndex + 1);
 		} else if (input === 'k' && selectedIndex > 0) {
@@ -70,6 +78,9 @@ const NoteListView = ({ notes, onView, onEdit, onDelete, onAdd, sortMode, onTogg
 				onDelete(notes[selectedIndex].id);
 			}
 		}
+		else if (input === 't') {
+			setShowThemeSelector(true);
+		}
 	});
 
 	const truncateContent = (content, maxLen) => {
@@ -96,13 +107,17 @@ const NoteListView = ({ notes, onView, onEdit, onDelete, onAdd, sortMode, onTogg
 
 	const getPriorityColor = priority => {
 		const colorMap = {
-			high: colors.highPriority,
-			medium: colors.mediumPriority,
-			low: colors.lowPriority,
-			none: colors.noPriority
+			high: colors.priorityHigh,
+			medium: colors.priorityMedium,
+			low: colors.priorityLow,
+			none: colors.priorityNone
 		};
-		return colorMap[priority] || colors.noPriority;
+		return colorMap[priority] || colors.priorityNone;
 	};
+
+	if (showThemeSelector) {
+		return <ThemeSelector onClose={() => setShowThemeSelector(false)} />;
+	}
 
 	if (notes.length === 0) {
 		return (
@@ -114,7 +129,7 @@ const NoteListView = ({ notes, onView, onEdit, onDelete, onAdd, sortMode, onTogg
 				paddingY={1}
 			>
 				<Box marginBottom={1}>
-					<Text bold color={colors.violet}>
+					<Text bold color={colors.secondary}>
 						Terminal Notes
 					</Text>
 				</Box>
@@ -154,7 +169,7 @@ const NoteListView = ({ notes, onView, onEdit, onDelete, onAdd, sortMode, onTogg
 			paddingY={1}
 		>
 			<Box marginBottom={1}>
-				<Text bold color={colors.green}>
+				<Text bold color={colors.primary}>
 					Terminal Notes ({notes.length})
 				</Text>
 				{notes.length > maxVisibleNotes && (
@@ -163,8 +178,8 @@ const NoteListView = ({ notes, onView, onEdit, onDelete, onAdd, sortMode, onTogg
 						[{selectedIndex + 1}/{notes.length}]
 					</Text>
 				)}
-				<Text color={colors.green} dimColor> | Sort: </Text>
-				<Text color={colors.green}>{getSortModeDisplay()}</Text>
+				<Text color={colors.primary} dimColor> | Sort: </Text>
+				<Text color={colors.primary}>{getSortModeDisplay()}</Text>
 			</Box>
 
 			<Box flexDirection="column" flexGrow={1}>
@@ -177,12 +192,13 @@ const NoteListView = ({ notes, onView, onEdit, onDelete, onAdd, sortMode, onTogg
 						<Box key={note.id} flexDirection="row" justifyContent="space-between">
 							<Box flexDirection="row">
 								<Text
-									color={colors.green}
-									bold={isSelected}
+									bold
+									color={colors.primary}
 									inverse={isSelected}
 								>
-									{" "}{note.title} - {truncateContent(note.content, maxContentLen)}
+									{" "}{note.title}{" - "}
 								</Text>
+								<Text inverse={isSelected} marginLeft={1} color={colors.primary} dimColor>{" "}{truncateContent(note.content, maxContentLen)}</Text>
 							</Box>
 							<Box flexDirection="row">
 								{priorityDisplay && (
@@ -190,7 +206,7 @@ const NoteListView = ({ notes, onView, onEdit, onDelete, onAdd, sortMode, onTogg
 										{" "}{priorityDisplay}{" "}
 									</Text>
 								)}
-								<Text inverse={isSelected} color={colors.green}>{formatDate(note.createdAt)}</Text>
+								<Text inverse={isSelected} color={colors.primary}>{" "}{formatDate(note.createdAt)}</Text>
 							</Box>
 						</Box>
 					);
@@ -199,7 +215,7 @@ const NoteListView = ({ notes, onView, onEdit, onDelete, onAdd, sortMode, onTogg
 
 			<Box paddingX={1}>
 				<Text dimColor>
-					j/k=↓/↑ | g=top | G=bottom | s=sort | 1/2/3/4=priority | i=insert | Enter=view | e=edit | d=delete | q=quit
+					j/k=↓/↑ | g=top | G=bottom | s=sort | t=theme | 1/2/3/4=priority | i=insert | Enter=view | e=edit | d=delete | q=quit
 				</Text>
 			</Box>
 		</Box>

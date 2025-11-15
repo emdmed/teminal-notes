@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { useScreenSize } from '../hooks/useScreenSize.js';
-import { colors } from '../utils/colors.js';
+import { useTheme } from '../contexts/ThemeContext.js';
 
 const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 	const [isViewMode, setIsViewMode] = useState(mode === 'view');
@@ -11,6 +11,7 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 	const [content, setContent] = useState(note ? note.content : '');
 	const [priority, setPriority] = useState(note ? note.priority || 'none' : 'none');
 	const { height, width } = useScreenSize();
+	const { colors } = useTheme();
 
 	const priorities = ['high', 'medium', 'low', 'none'];
 
@@ -78,12 +79,12 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 
 	const getPriorityColor = priority => {
 		const colorMap = {
-			high: colors.highPriority,
-			medium: colors.mediumPriority,
-			low: colors.lowPriority,
-			none: colors.noPriority
+			high: colors.priorityHigh,
+			medium: colors.priorityMedium,
+			low: colors.priorityLow,
+			none: colors.priorityNone
 		};
-		return colorMap[priority] || colors.noPriority;
+		return colorMap[priority] || colors.priorityNone;
 	};
 
 	if (isViewMode) {
@@ -95,12 +96,12 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 				paddingX={2}
 				paddingY={1}
 			>
-				<Box marginBottom={1} paddingX={1} flexDirection="row" alignItems="center" justifyContent="space-between">
-					<Text bold color={colors.green}>
+				<Box borderStyle="single" borderColor={colors.primary} marginBottom={1} paddingX={1} flexDirection="row" alignItems="center" justifyContent="space-between">
+					<Text bold color={colors.primary}>
 						{title || 'Untitled'}
 					</Text>
 					<Box flexDirection="row">
-						<Text color={colors.green}>Priority: </Text>
+						<Text color={colors.primary}>Priority: </Text>
 						<Text color={getPriorityColor(priority)} bold>
 							{priority}
 						</Text>
@@ -111,11 +112,11 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 					flexDirection="column"
 					flexGrow={1}
 					borderStyle="single"
-					borderColor={colors.green}
+					borderColor={colors.primary}
 					paddingX={1}
 					paddingY={1}
 				>
-					<Text color={colors.green}>{content || '(empty)'}</Text>
+					<Text color={colors.primary}>{content || '(empty)'}</Text>
 				</Box>
 
 				<Box paddingX={1} marginTop={1}>
@@ -135,7 +136,7 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 			paddingX={2}
 			paddingY={1}
 		>
-			<Box marginBottom={1} paddingX={1} flexDirection="row" alignItems="center" justifyContent="space-between">
+			<Box borderStyle="single" borderColor={colors.primary} marginBottom={1} paddingX={1} flexDirection="row" alignItems="center" justifyContent="space-between">
 				<Box flexGrow={1} flexDirection="row" alignItems="center">
 					{editingField === 'title' ? (
 						<Box flexGrow={1}>
@@ -148,17 +149,17 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 						</Box>
 					) : (
 						<>
-							<Text inverse color={colors.green}>
+							<Text inverse color={colors.primary}>
 								{" "}{title || 'Untitled'}{" "}
 							</Text>
-							<Text color={colors.green}> (↑ to edit)</Text>
+							<Text color={colors.primary}> (↑ to edit)</Text>
 						</>
 					)}
 				</Box>
 				<Box flexDirection="row">
-					<Text color={colors.green}>Priority: </Text>
+					<Text color={colors.primary}>Priority: </Text>
 					<Text color={getPriorityColor(priority)} bold>{priority}</Text>
-					<Text color={colors.green} dimColor> (Tab)</Text>
+					<Text color={colors.primary} dimColor> (Tab)</Text>
 				</Box>
 			</Box>
 
@@ -166,7 +167,7 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 				flexDirection="column"
 				flexGrow={1}
 				borderStyle="single"
-				borderColor={colors.green}
+				borderColor={colors.primary}
 				paddingX={1}
 				paddingY={1}
 			>
@@ -181,8 +182,8 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 					</Box>
 				) : (
 					<Box flexDirection="column">
-						<Text color={colors.green}>{content || '(empty)'}</Text>
-						<Text color={colors.green} marginTop={1}>
+						<Text color={colors.primary}>{content || '(empty)'}</Text>
+						<Text color={colors.primary} marginTop={1}>
 							(↓ to edit)
 						</Text>
 					</Box>
