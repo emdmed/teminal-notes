@@ -15,24 +15,20 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 	const priorities = ['high', 'medium', 'low', 'none'];
 
 	useInput((input, key) => {
-		// Escape always cancels
 		if (key.escape) {
 			onCancel();
 			return;
 		}
 
-		// In view mode: Enter switches to edit mode
 		if (isViewMode && key.return) {
 			setIsViewMode(false);
 			return;
 		}
 
-		// Don't process other keys in view mode
 		if (isViewMode) {
 			return;
 		}
 
-		// Down arrow: ONLY switch from title to content
 		if (key.downArrow) {
 			if (editingField === 'title') {
 				setEditingField('content');
@@ -40,7 +36,6 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 			return;
 		}
 
-		// Up arrow: ONLY switch from content to title
 		if (key.upArrow) {
 			if (editingField === 'content') {
 				setEditingField('title');
@@ -48,7 +43,6 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 			return;
 		}
 
-		// Tab: cycle through priority values
 		if (key.tab) {
 			const currentIndex = priorities.indexOf(priority);
 			const newIndex = (currentIndex + 1) % priorities.length;
@@ -56,7 +50,6 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 			return;
 		}
 
-		// Ctrl+S: save
 		if (input === 's' && key.ctrl) {
 			if (title.trim() && content.trim()) {
 				onSave(title, content, priority);
@@ -83,18 +76,17 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 		setContent(value);
 	};
 
-	// View mode UI
-	if (isViewMode) {
-		const getPriorityColor = priority => {
-			const colorMap = {
-				high: colors.highPriority,
-				medium: colors.mediumPriority,
-				low: colors.lowPriority,
-				none: colors.noPriority
-			};
-			return colorMap[priority] || colors.noPriority;
+	const getPriorityColor = priority => {
+		const colorMap = {
+			high: colors.highPriority,
+			medium: colors.mediumPriority,
+			low: colors.lowPriority,
+			none: colors.noPriority
 		};
+		return colorMap[priority] || colors.noPriority;
+	};
 
+	if (isViewMode) {
 		return (
 			<Box
 				flexDirection="column"
@@ -103,14 +95,16 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 				paddingX={2}
 				paddingY={1}
 			>
-				<Box marginBottom={1} flexDirection="row" alignItems="center">
+				<Box marginBottom={1} paddingX={1} flexDirection="row" alignItems="center" justifyContent="space-between">
 					<Text bold color={colors.green}>
 						{title || 'Untitled'}
 					</Text>
-					<Text color={colors.green}> | Priority: </Text>
-					<Text color={getPriorityColor(priority)} bold>
-						{priority}
-					</Text>
+					<Box flexDirection="row">
+						<Text color={colors.green}>Priority: </Text>
+						<Text color={getPriorityColor(priority)} bold>
+							{priority}
+						</Text>
+					</Box>
 				</Box>
 
 				<Box
@@ -133,7 +127,6 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 		);
 	}
 
-	// Edit mode UI
 	return (
 		<Box
 			flexDirection="column"
@@ -142,27 +135,31 @@ const NoteEditor = ({ note, onSave, onCancel, mode = 'edit' }) => {
 			paddingX={2}
 			paddingY={1}
 		>
-			<Box marginBottom={1} flexDirection="row" alignItems="center">
-				{editingField === 'title' ? (
-					<Box flexGrow={1}>
-						<TextInput
-							value={title}
-							onChange={handleTitleChange}
-							onSubmit={handleTitleSubmit}
-							placeholder="Enter note title..."
-						/>
-					</Box>
-				) : (
-					<>
-						<Text inverse color={colors.green}>
-							{" "}{title || 'Untitled'}{" "}
-						</Text>
-						<Text color={colors.green}> (↑ to edit)</Text>
-					</>
-				)}
-				<Text color={colors.green}> | Priority: </Text>
-				<Text color={colors.green} bold>{priority}</Text>
-				<Text color={colors.green} dimColor> (Tab to change)</Text>
+			<Box marginBottom={1} paddingX={1} flexDirection="row" alignItems="center" justifyContent="space-between">
+				<Box flexGrow={1} flexDirection="row" alignItems="center">
+					{editingField === 'title' ? (
+						<Box flexGrow={1}>
+							<TextInput
+								value={title}
+								onChange={handleTitleChange}
+								onSubmit={handleTitleSubmit}
+								placeholder="Enter note title..."
+							/>
+						</Box>
+					) : (
+						<>
+							<Text inverse color={colors.green}>
+								{" "}{title || 'Untitled'}{" "}
+							</Text>
+							<Text color={colors.green}> (↑ to edit)</Text>
+						</>
+					)}
+				</Box>
+				<Box flexDirection="row">
+					<Text color={colors.green}>Priority: </Text>
+					<Text color={getPriorityColor(priority)} bold>{priority}</Text>
+					<Text color={colors.green} dimColor> (Tab)</Text>
+				</Box>
 			</Box>
 
 			<Box

@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {useInput, useApp} from 'ink';
+import React, { useState, useEffect } from 'react';
+import { useInput, useApp } from 'ink';
 import NoteListView from './components/NoteListView.js';
 import NoteEditor from './components/NoteEditor.js';
 import DeleteConfirmation from './components/DeleteConfirmation.js';
@@ -12,12 +12,12 @@ import {
 } from './storage.js';
 
 export default function App() {
-	const {exit} = useApp();
+	const { exit } = useApp();
 	const [view, setView] = useState('list');
 	const [notes, setNotes] = useState([]);
 	const [selectedNoteId, setSelectedNoteId] = useState(null);
-	const [editorMode, setEditorMode] = useState('edit'); // 'view' or 'edit'
-	const [sortMode, setSortMode] = useState('priority-asc'); // priority-asc, priority-desc, date-asc, date-desc
+	const [editorMode, setEditorMode] = useState('edit');
+	const [sortMode, setSortMode] = useState('priority-asc');
 
 	useEffect(() => {
 		const loadedNotes = loadNotes();
