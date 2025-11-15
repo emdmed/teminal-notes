@@ -4,11 +4,14 @@ A vim-style terminal note-taking application built with React and Ink. Features 
 
 ## Features
 
-- **Full TUI Interface** - List view shows all notes with title and preview (first 30 chars)
+- **Full TUI Interface** - List view shows all notes with title and preview
 - **Vim Keybindings** - Navigate and manage notes using familiar vim controls
-- **Edit Mode** - Create new notes or edit existing ones
+- **Priority System** - Organize notes with 4 priority levels (high, medium, low, none)
+- **Flexible Sorting** - Sort by priority or date (ascending/descending)
+- **View & Edit Modes** - View notes in read-only mode, press Enter to edit
+- **Quick Priority Changes** - Press 1/2/3/4 in list view to set priority
 - **Quick Navigation** - Jump to top/bottom, scroll through notes
-- **Delete with Confirmation** - Safe deletion with y/n confirmation
+- **Delete with Confirmation** - Safe deletion with dd or confirmation dialog
 - **Persistent Storage** - All notes saved in `~/.terminal_notes.json`
 - **Timestamps** - Track creation and modification dates
 - **Cross-Platform** - Compatible with Arch Linux and Ubuntu
@@ -45,16 +48,33 @@ terminal-notes
 | `k` / `↑` | Move up to previous note |
 | `g` | Jump to top (first note) |
 | `G` | Jump to bottom (last note) |
+| `s` | Toggle sort mode (priority ↑/↓, date ↑/↓) |
+| `1` | Set selected note priority to high |
+| `2` | Set selected note priority to medium |
+| `3` | Set selected note priority to low |
+| `4` | Set selected note priority to none |
 | `i` / `a` | Insert/Add new note |
-| `e` / `Enter` | Edit selected note |
-| `d` | Delete selected note |
+| `Enter` | View selected note (read-only) |
+| `e` | Edit selected note directly |
+| `dd` | Delete selected note (quick delete) |
 | `q` / `ESC` | Quit application |
+
+### View Mode (Read-Only)
+
+| Key | Action |
+|-----|--------|
+| `Enter` | Switch to edit mode |
+| `ESC` | Return to list |
 
 ### Edit Mode
 
 | Key | Action |
 |-----|--------|
+| `↑` | Switch to title editing |
+| `↓` | Switch to content editing |
+| `Tab` | Cycle through priorities (high → medium → low → none) |
 | `Enter` | Move to next field / Save note |
+| `Ctrl+S` | Save note |
 | `ESC` | Cancel and return to list |
 
 ### Delete Confirmation
@@ -69,17 +89,16 @@ terminal-notes
 When you launch the app, you'll see:
 
 ```
-Terminal Notes (3)
+Terminal Notes (3) | Sort: Priority ↑
 
-> Welcome to Terminal Notes - This is a vim-style note ta... (11/14/2025)
-  Shopping List - Buy milk, eggs, bread, and c... (11/14/2025)
-  Project Ideas - Build a terminal-based task ... (11/14/2025)
+  Welcome to Terminal Notes - This is a vim-style note ta...  1  11/14/2025
+  Shopping List - Buy milk, eggs, bread, and c...             2  11/14/2025
+  Project Ideas - Build a terminal-based task ...              -  11/14/2025
 
-┌─────────────────────────────────────────────────────────┐
-│ j/k=down/up | g=top | G=bottom | i=insert | e/Edit=edit │
-│ d=delete | q=quit                                        │
-└─────────────────────────────────────────────────────────┘
+j/k=↓/↑ | g=top | G=bottom | s=sort | 1/2/3/4=priority | i=insert | Enter=view | e=edit | d=delete | q=quit
 ```
+
+The priority is shown on the right (1=high, 2=medium, 3=low, -=none) with color coding.
 
 ## Data Storage
 
@@ -92,6 +111,7 @@ Each note contains:
 - `id` - Unique identifier
 - `title` - Note title
 - `content` - Note content/body
+- `priority` - Priority level (high, medium, low, none)
 - `createdAt` - Creation timestamp (ISO 8601)
 - `updatedAt` - Last modification timestamp (ISO 8601)
 
